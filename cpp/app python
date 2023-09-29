@@ -1,0 +1,68 @@
+from flask import Flask, render_template, jsonify
+import random
+
+app = Flask(__name__)
+
+@app.route('/')
+def index():
+    return render_template('index.html')
+
+@app.route('/restroom_data')
+def get_restroom_data():
+    # Simulated data for restroom occupancy and cleanliness (replace this with real IoT data)
+    occupancy = random.choice([True, False])
+    cleanliness = random.randint(1, 10)  # Assuming cleanliness level from 1 to 10
+
+    # Return data as JSON
+    return jsonify({'occupancy': occupancy, 'cleanliness': cleanliness})
+
+if __name__ == '__main__':
+    app.run(debug=True)
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Restroom App</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Smart Restroom Status</h1>
+        <div id="status"></div>
+        <button onclick="checkRestroomStatus()">Check Status</button>
+    </div>
+
+    <script>
+        function checkRestroomStatus() {
+            fetch('/restroom_data')
+                .then(response => response.json())
+                .then(data => {
+                    let statusDiv = document.getElementById('status');
+                    if (data.occupancy) {
+                        statusDiv.innerText = 'Restroom Occupied | Cleanliness Level: ' + data.cleanliness;
+                    } else {
+                        statusDiv.innerText = 'Restroom Available | Cleanliness Level: ' + data.cleanliness;
+                    }
+                })
+                .catch(error => console.error(error));
+        }
+    </script>
+</body>
+</html>
+
+body {
+    font-family: Arial, sans-serif;
+}
+
+.container {
+    max-width: 400px;
+    margin: 0 auto;
+    text-align: center;
+    margin-top: 50px;
+}
+
+button {
+    margin-top: 20px;
+}
