@@ -1,0 +1,46 @@
+import RPi.GPIO as GPIO
+import time
+import random
+import paho.mqtt.client as mqtt
+
+# GPIO pins for sensors
+OCCUPANCY_SENSOR_PIN = 17
+CLEANLINESS_SENSOR_PIN = 18
+
+# MQTT Broker
+MQTT_BROKER = "mqtt broker IP"
+MQTT_PORT = 1883
+MQTT_TOPIC_OCCUPANCY = "restroom/occupancy"
+MQTT_TOPIC_CLEANLINESS = "restroom/cleanliness"
+
+# Initialize GPIO settings
+GPIO.setmode(GPIO.BCM)
+GPIO.setup(OCCUPANCY_SENSOR_PIN, GPIO.IN)
+GPIO.setup(CLEANLINESS_SENSOR_PIN, GPIO.IN)
+
+# MQTT Callbacks
+def on_connect(client, userdata, flags, rc):
+    print("Connected with result code "+str(rc))
+
+def on_publish(client, userdata, mid):
+    print("Message Published")
+
+# MQTT Client
+client = mqtt.Client()
+client.on_connect = on_connect
+client.on_publish = on_publish
+
+client.connect(MQTT_BROKER, MQTT_PORT, 60)
+
+# Main loop
+while True:
+    # Read sensor data
+    occupancy_status = GPIO.input(OCCUPANCY_SENSOR_PIN)
+    cleanliness_level = GPIO.input(CLEANLINESS_SENSOR_PIN)
+
+    # Publish data to MQTT topics
+    client.publish(MQTT_TOPIC_OCCUPANCY, occupancy_status)
+    client.publish(MQTT_TOPIC_CLEANLINESS, cleanliness_level)
+
+    # Sleep for a few seconds before reading again
+    time.sleep(5)
